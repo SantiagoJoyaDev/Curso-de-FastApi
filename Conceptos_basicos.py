@@ -14,3 +14,6 @@
 # Starlette --> Para la ejecucion del servidor
 # Pydantic --> Para la validación de datos
 # Uvicorn --> Para la ejecucion del servidor
+
+# Parametros de ruta: Son variables que se pueden pasar a las rutas de una API. Se utilizan para indicar que una parte de la ruta es una variable. Por ejemplo, en la ruta /movies/{id}, 
+# el parametro {id} es una variable que se puede pasar a la ruta para indicar que queremos obtener una pelicula con un id especifico.
