@@ -1,92 +1,117 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
+# El body es para recibir datos de la peticion, y el path es para recibir datos de la ruta
 from fastapi.responses import HTMLResponse
 
-# Esto es una instancia de FastAPI
-app = FastAPI() # Esta linea crea la instancia de la clase FastAPI.
-app.title = "mi aplicacion con FastAPI"# Se le asigna un titulo a la aplicacion.
-app.version = "3.1.0" # Se le asigna una version a la aplicacion.
+# Configuración de la aplicación
+app = FastAPI()
+app.title = "Mi aplicación con FastAPI"
+app.version = "1.0.0"
 
-# Esto es un decorador, se usa para indicar que la siguiente funcion es un manejador de peticiones.
-@app.get("/",tags=["Home"])
-# Esta funcion se ejecuta cuando se recibe una peticion GET a la raiz de la aplicacion.
-def get_home():# Esto es un decorador, se usa para indicar que la siguiente funcion es un manejador de peticiones.
-    # Esto es un diccionario, se usa para enviar datos a la aplicacion.
-    return {"Hello": "World"}
-
-@app.get("/home2",tags=["Home"])
-def get_home2():
-    return {"Hello": "World"}
-    
-@app.get("/home3",tags=["Home"])
-def get_home3():
-    return HTMLResponse('<h1>Respuesta desde HTML --> Santiago Joya </h1>')
-#Movies
-movies = [ #Listado de peliculas en formato de diccionario. 
+# Listado de películas (Simulación de Base de Datos)
+movies = [
     {
         "id": 1,
         "title": "Avatar",
-        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
+        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi...",
         "year": 2009,
         "rating": 7.8,
-        "category": "Accion"
+        "category": "Acción"
     },
     {
         "id": 2,
         "title": "Avatar 2",
-        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
+        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi...",
         "year": 2022,
         "rating": 7.8,
-        "category": "Accion"
+        "category": "Acción"
     },
     {
         "id": 3,
-        "title": "Avatar 3",
-        "overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
-        "year": 2023,
-        "rating": 7.8,
-        "category": "Accion"
-    },
-    {
-        "id": 4,
-        "title": "Los locos adams",
-        "overview": " risas risas y mas risas",
+        "title": "Los locos Adams",
+        "overview": "Risas y más risas",
         "year": 2019,
         "rating": 9.0,
         "category": "Comedia"
     }
 ]
 
-@app.get("/movies",tags=["Movies"])
+# --- RUTAS DE LA APLICACIÓN ---
+
+@app.get("/", tags=["Home"])
+def get_home():
+    return HTMLResponse('<h1>Respuesta desde FastAPI</h1>')
+
+# --- SECCIÓN: MOVIES (CRUD) ---
+
+# 1. Crear una nueva película (POST)
+@app.post("/movies", tags=["Movies"])
+def create_movie(id: int = Body(), title: str = Body(), overview: str = Body(), year: int = Body(), rating: float = Body(), category: str = Body()):
+    new_movie = {
+        "id": id,
+        "title": title,
+        "overview": overview,
+        "year": year,
+        "rating": rating,
+        "category": category
+    }
+    movies.append(new_movie)
+    return {"message": "Película registrada con éxito", "movie": new_movie}
+
+# 2. Obtener todas las películas (GET)
+@app.get("/movies", tags=["Movies"])
 def get_movies():
-    return {"message":"Here is the list of movies."}
-
-@app.get("/movies2",tags=["Movies"])
-def get_movies2():
-    return {"message":"Here is the list of movies."}
-
-@app.get("/movies3",tags=["Movies"])
-def get_movies3():
     return movies
 
-@app.get("/movies4/{id}",tags=["Movies"])# con parametro de ruta
-def get_movie4(id:int):
-    return id
+# 3. Filtrar películas por categoría y año (GET - Query Parameters)
+@app.get("/movies/", tags=["Movies"])
+def get_movies_by_category(category: str, year: int):
+    results = [movie for movie in movies if movie["category"] == category and movie["year"] == year]
+    return results if results else {"message": "No se encontraron coincidencias"}
 
-@app.get("/movies5/{id}",tags=["Movies"])# con parametro de ruta y validación de datos
-def get_movie5(id:int):
+# 4. Obtener una película por ID (GET - Path Parameters)
+@app.get("/movies/{id}", tags=["Movies"])
+def get_movie(id: int):
     for movie in movies:
         if movie["id"] == id:
             return movie
-    return {"message":"Movie not found"}
+    return {"message": "Película no encontrada"}
 
-@app.get("/movies6/",tags=["Movies"])# con parametro de ruta por categoria
-def get_movie6(category:str,year:int):#(Aqui se cargan mas datos a esta ruta, son obligatorios)
+# 5. Actualizar una película existente (PUT)
+@app.put("/movies/{id}", tags=["Movies"])
+def update_movie(id: int, title: str = Body(), overview: str = Body(), year: int = Body(), rating: float = Body(), category: str = Body()):
     for movie in movies:
-        if movie["category"] == category and movie["year"] == year:
-            return movie
-    return {"message":"Movie not found"}
+        if movie["id"] == id:
+            movie["title"] = title
+            movie["overview"] = overview
+            movie["year"] = year
+            movie["rating"] = rating
+            movie["category"] = category
+            return {
+                "message": "Película actualizada con éxito", 
+                "movie_updated": movie,
+                "current_movies": movies
+            }
+    return {"message": "Película no encontrada"}
 
-#Cars
-@app.get("/cars",tags=["Cars"])
-def get_cars():
-    return {"message":"Here is the list of cars."}
+# 6. Eliminar una película (DELETE)
+@app.delete("/movies/{id}", tags=["Movies"])
+def delete_movie(id: int): 
+    for movie in movies:
+        if movie["id"] == id:
+            movies.remove(movie)
+            return {
+                "message": "Película eliminada con éxito",
+                "current_movies": movies
+            }
+    return {"message": "Película no encontrada"}
+
+
+# --- OTRAS SECCIONES (Práctica) ---
+
+@app.get("/users", tags=["Users"])
+def get_users():
+    return {"message": "Lista de usuarios registrados."}
+
+@app.get("/reviews", tags=["Reviews"])
+def get_reviews():
+    return {"message": "Listado de reseñas de las películas."}
