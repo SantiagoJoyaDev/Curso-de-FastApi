@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI , Path ,Query
 # "Body" se usa con el metodo numero 1 de obtener datos de la peticion, y "BaseModel" con el metodo numero 2 de obtener datos de la peticion
 # El body es para recibir datos de la peticion, y el path es para recibir datos de la ruta
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, FileResponse
 from pydantic import BaseModel, Field  #Forma 2 de realizarlo(Schemas)
 from typing import Optional, List #El Optinal es para el metodo 2 de la clase Movie, y List es para el metodo 2 de la clase Movie
 import datetime
@@ -93,6 +93,7 @@ movies: List[Movie] = [] #aca voy a guardar las peliculas, se pone List y entre 
 @app.get("/", tags=["Home"])
 def get_home():
     return HTMLResponse('<h1>Respuesta desde FastAPI</h1>')
+    # Otra manera de hacerlo es: return PlainTextResponse('<h1>Respuesta desde FastAPI</h1>')
 
 # --- SECCIÓN: MOVIES (CRUD) ---
 
@@ -117,6 +118,13 @@ def create_movie(movie:CreateMovie):# metodo 2 de obtener datos de la peticion c
     movies.append(movie)# otra opcion es: movies.append(movie.model_dump())
     return [movie.model_dump() for movie in movies] # otra opcion es: return movies
 
+    # Esta es otra rta de JSONResponse
+    # content = [movie.model_dump() for movie in movies] # otra opcion es: return movies
+    # return JSONResponse(content=content)
+
+    # Otra rta es
+    # return RedirectResponse("/movies", status_code=200)
+
 # 2. Obtener todas las películas (GET)
 @app.get("/movies", tags=["Movies"])
 def get_movies() -> List[Movie]:#El -> List[Movie] se cambio de tener el ejemplo anterior de Movie a tener List[Movie] porque antes se retornaba un solo objeto y ahora se retorna una lista con muchos objetos
@@ -124,13 +132,13 @@ def get_movies() -> List[Movie]:#El -> List[Movie] se cambio de tener el ejemplo
 
 # 3. Filtrar películas por categoría y año (GET - Query Parameters)
 @app.get("/movies/", tags=["Movies"])
-def get_movies_by_category(category: str, year: int):
-    results = [movie for movie in movies if movie["category"] == category and movie["year"] == year]
+def get_movies_by_category(category: str = Query(default=None , min_length=5, max_length=50)):
+    results = [movie for movie in movies if movie["category"] == category]
     return results if results else {"message": "No se encontraron coincidencias"}
 
 # 4. Obtener una película por ID (GET - Path Parameters)
 @app.get("/movies/{id}", tags=["Movies"])
-def get_movie(id: int):
+def get_movie(id: int = Path(ge=1, le=2000)):
     for movie in movies:
         if movie["id"] == id:
             return movie
@@ -190,3 +198,9 @@ def get_users():
 @app.get("/reviews", tags=["Reviews"])
 def get_reviews():
     return {"message": "Listado de reseñas de las películas."}
+
+@app.get("/image", tags=["Image"])
+def get_image():
+    return FileResponse("image.jpg")
+
+    
