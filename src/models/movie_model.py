@@ -17,12 +17,8 @@ class Movie(BaseModel):
 class CreateMovie(BaseModel):  # Validaciones con Field
     id: int
     title: str = Field(min_length=5, max_length=15, default="titulo por defecto")
-    overview: str = Field(
-        min_length=5, max_length=50, default="descripcion por defecto"
-    )
-    year: int = Field(
-        le=datetime.datetime.now().year, default=2024
-    )  # otra manera de hacerlo Field(ge=1800, le=2023)
+    overview: str = Field(min_length=5, max_length=500, default="descripcion por defecto")
+    year: int = Field(le=datetime.datetime.now().year, default=2024)  # otra manera de hacerlo Field(ge=1800, le=2023)
     rating: float = Field(ge=0, le=10, default=0)
     category: str = Field(min_length=5, max_length=50, default="categoria por defecto")
     # gt es mayor que, lt es menor que, ge es mayor o igual que, le es menor o igual que
@@ -40,7 +36,7 @@ class CreateMovie(BaseModel):  # Validaciones con Field
                     "overview": "En un exuberante planeta llamado Pandora viven los Na'vi...",
                     "year": 2009,
                     "rating": 7.8,
-                    "category": "Acción",
+                    "category": "Accion",
                 }
             ]
         }

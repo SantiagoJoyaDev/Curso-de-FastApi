@@ -1,11 +1,17 @@
 from typing import List
 from fastapi import Path, Query, Body, APIRouter
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, RedirectResponse, FileResponse
+from fastapi.responses import (
+    JSONResponse,
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    FileResponse,
+)
 from src.models.movie_model import Movie, CreateMovie, UpdateMovie
 
 movies: List[Movie] = []  # aca voy a guardar las peliculas, se pone List y entre corchetes el modelo de la clase
-movie_router = APIRouter() # Contiene las rutas que tienen que ver con pelicuas
+movie_router = APIRouter()  # Contiene las rutas que tienen que ver con pelicuas
 
 # --- SECCIÓN: MOVIES (CRUD) ---
 
@@ -30,8 +36,8 @@ movie_router = APIRouter() # Contiene las rutas que tienen que ver con pelicuas
 def create_movie(
     movie: CreateMovie,
 ):  # metodo 2 de obtener datos de la peticion create_movie(movie:Movie):
-    movies.append(movie)  # otra opcion es: movies.append(movie.model_dump())
-    return [movie.model_dump() for movie in movies]  # otra opcion es: return movies
+    movies.append(movie.model_dump())  # otra opcion es: movies.append(movie.model_dump())
+    return movies
 
     # Esta es otra rta de JSONResponse
     # content = [movie.model_dump() for movie in movies] # otra opcion es: return movies
@@ -49,9 +55,7 @@ def get_movies() -> List[Movie]:
 
 # 3. Filtrar películas por categoría y año (GET - Query Parameters)
 @movie_router.get("/", tags=["Movies"])
-def get_movies_by_category(
-    category: str = Query(default=None, min_length=5, max_length=50),
-):
+def get_movies_by_category(category: str = Query(default=None, min_length=5, max_length=50),):
     results = [movie for movie in movies if movie["category"] == category]
     return results if results else {"message": "No se encontraron coincidencias"}
 
